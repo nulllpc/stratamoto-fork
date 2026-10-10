@@ -1,18 +1,18 @@
 # stratamoto
 
-A fuzzer for [Stratum V2](https://github.com/stratum-mining/sv2-spec) roles, built along the
-lines of [fuzzamoto](https://github.com/dergoegge/fuzzamoto).
+A fuzzer for [Stratum V2](https://github.com/stratum-mining/sv2-spec) roles.
 
 How far each protocol message is taken is tracked in [`FEATURES.md`](FEATURES.md). How the
 whole thing works, from a program to a filed finding, is in
 [`docs/HowStratamotoWorks.md`](docs/HowStratamotoWorks.md).
 
-Test cases are not byte strings. They are programs in a typed intermediate
-representation, where the types record how one message depends on another: a `SetupConnection`
-finalized for one subprotocol cannot be sent as another, and what needs a session can only run
-inside the block that runs once the server agreed to the setup. A mutator can rewrite anything
-it likes and still not fabricate a relationship the protocol does not allow, which is what
-separates this from feeding random bytes at a decoder.
+Test cases are not byte strings. They are programs in a typed intermediate representation,
+after [Fuzzilli](https://github.com/googleprojectzero/fuzzilli)'s FuzzIL, where the types
+record how one message depends on another: a `SetupConnection` finalized for one subprotocol
+cannot be sent as another, and what needs a session can only run inside the block that runs
+once the server agreed to the setup. A mutator can rewrite anything it likes and still not
+fabricate a relationship the protocol does not allow, which is what separates this from feeding
+random bytes at a decoder.
 
 The scope today is the `SetupConnection` message flow: every component handles that one flow
 completely before the next message is added.
@@ -30,7 +30,7 @@ over real sockets. A deterministic runtime for simulated roles is being sketched
 | [`stratamoto`](crates/stratamoto) | the harness: the transport, the runner and the oracles |
 | [`stratamoto-targets`](crates/stratamoto-targets) | the real roles: sv2-apps' pool, against Bitcoin Core |
 | [`stratamoto-scenarios`](crates/stratamoto-scenarios) | one binary per scenario |
-| [`stratamoto-nyx-sys`](crates/stratamoto-nyx-sys) | the Nyx agent a scenario talks to the snapshotting VM through, vendored from fuzzamoto |
+| [`stratamoto-nyx-sys`](crates/stratamoto-nyx-sys) | the Nyx agent a scenario talks to the snapshotting VM through |
 | [`stratamoto-libafl`](crates/stratamoto-libafl) | the fuzzer: LibAFL clients driving Nyx VMs, mutating programs |
 | [`stratamoto-cli`](crates/stratamoto-cli) | generating, printing and compiling programs by hand, and building a Nyx share directory |
 
@@ -38,7 +38,7 @@ A run goes: a **generator** builds a program through the **builder**, which reje
 ill-typed; the **compiler** lowers it to actions; the **runner** carries those out against a
 **deployment**; the **oracles** judge what came back.
 
-A campaign goes the way fuzzamoto's does: a scenario binary boots inside a
+A campaign goes like this: a scenario binary boots inside a
 [Nyx](https://nyx-fuzz.com) VM, brings the roles up and takes a snapshot; the fuzzer mutates
 programs and runs each from that snapshot, with coverage from the pool's AFL instrumentation;
 findings are filed by the oracle that made them.
